@@ -9,6 +9,25 @@
 class Simulator {
 public:
 
+    static PointEvaluator::eval_t expectedScore(const Hand& hand, const Rethrow& rt) {
+        PointEvaluator::eval_t evalSum;
+        std::fill(evalSum.begin(), evalSum.end(), 0.0);
+
+        size_t nbEvals = 0;
+        Simulator::forAllThrows(5-rt.size, [&](const Throw& t) {
+            Hand newHand = combine(rt, t);
+            PointEvaluator::eval_t newEval = PointEvaluator::eval(newHand);
+            ++nbEvals;
+            for(size_t i = 0; i < newEval.size(); ++i) evalSum[i] += newEval[i];
+        });
+
+        if(nbEvals != 0) {
+            for(double& sc : evalSum) sc /= nbEvals;
+        }
+
+        return evalSum;
+    }
+
     template<typename Callback>
     static void forAllRethrows(const Hand& hand, Callback&& callback) {
         for(int mask = 0; mask < 32; ++mask) {
