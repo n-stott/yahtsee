@@ -28,7 +28,7 @@ int main() {
         });
 
         forAllCategories([&](Category c) {
-            std::cout << 1.0*evalSum[(int)c] / nbEvals << std::endl;
+            std::cout << toString(c) << " : " << 1.0*evalSum[(int)c] / nbEvals << std::endl;
         });
     });
 
