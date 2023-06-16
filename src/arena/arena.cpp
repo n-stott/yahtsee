@@ -25,10 +25,10 @@ void SinglePlayerArena::setAgent(Agent& a) {
     agent_ = &a;
 }
 
-void SinglePlayerArena::play() {
+void SinglePlayerArena::play(int seed) {
     scorecard_ = ScoreCard{};
     if(!agent_) return;
-    RandomGenerator rg(0);
+    RandomGenerator rg(seed);
     for(int round = 0; round < (int)Category::size; ++round) {
         Agent* agent = agent_;
         ScoreCard& scorecard = scorecard_;
@@ -52,10 +52,10 @@ void TwoPlayerArena::setAgents(Agent& a, Agent& b) {
     agents_ = {{ &a, &b }};
 }
 
-void TwoPlayerArena::play() {
+void TwoPlayerArena::play(int seed) {
     scorecards_ = {{ ScoreCard{}, ScoreCard{} }};
     if(agents_.empty()) return;
-    RandomGenerator rg(0);
+    RandomGenerator rg(seed);
     for(int round = 0; round < (int)Category::size; ++round) {
         for(int a = 0; a < 2; ++a) {
             Agent* agent = agents_[a];

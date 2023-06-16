@@ -6,6 +6,7 @@ add_library(gamelogic
     src/logic/evaluator.cpp
     src/arena/arena.cpp
     src/agents/random.cpp
+    src/agents/greedy.cpp
 )
 target_include_directories(gamelogic PUBLIC include)
 

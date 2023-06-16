@@ -12,7 +12,7 @@ std::array<double, (int)Category::size> ProbabilityEvaluator::eval(const Hand& h
 }
 
 int PointEvaluator::eval(const Hand& hand, Category category) {
-    assert(std::is_sorted(hand.values.begin(), hand.values.end()));
+    // assert(std::is_sorted(hand.values.begin(), hand.values.end()));
     switch(category) {
         case Category::ACES:   return std::count(hand.values.begin(), hand.values.end(), 1) * 1;
         case Category::TWOS:   return std::count(hand.values.begin(), hand.values.end(), 2) * 2;

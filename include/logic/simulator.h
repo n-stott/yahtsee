@@ -1,6 +1,7 @@
 #ifndef SIMULATOR_H
 #define SIMULATOR_H
 
+#include "logic/evaluator.h"
 #include "logic/round.h"
 #include "utils.h"
 #include <cmath>

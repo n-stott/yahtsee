@@ -4,6 +4,7 @@
 #include "logic/filters.h"
 #include "arena/arena.h"
 #include "agents/random.h"
+#include "agents/greedy.h"
 #include <iostream>
 #include <cstring>
 
@@ -64,16 +65,34 @@ void test() {
     // });
 }
 
+template<typename AgentType, typename... Args>
+void testAgent(const char* name, Args... args) {
+    double totalScore = 0;
+    int nbRounds = 100;
+    for(int seed = 0; seed < nbRounds; ++seed) {
+        AgentType agent(args...);
+        SinglePlayerArena arena;
+        arena.setAgent(agent);
+        arena.play(seed);
+        const auto& scores = arena.scorecard();
+        totalScore += scores.currentScore();
+    }
+    std::cout << name << " : " << totalScore/nbRounds << std::endl;
+}
+
 int main() {
 
-    for(int i = 0; i < 100; ++i) {
-        Random a(i);
-        SinglePlayerArena arena;
-        arena.setAgent(a);
-        arena.play();
-        const auto& scores = arena.scorecard();
-        std::cout << scores.currentScore() << std::endl;
-    }
+    testAgent<Random>("random", 0);
+    testAgent<Greedy>("greedy");
+
+    // for(int i = 0; i < 100; ++i) {
+    //     Random a(i);
+    //     SinglePlayerArena arena;
+    //     arena.setAgent(a);
+    //     arena.play();
+    //     const auto& scores = arena.scorecard();
+    //     std::cout << scores.currentScore() << std::endl;
+    // }
 
     // for(int i = 0; i < 100; ++i) {
     //     Random a(2*i+0);

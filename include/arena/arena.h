@@ -12,7 +12,7 @@ public:
     
     void setAgent(Agent& a);
 
-    void play();
+    void play(int seed);
 
     const ScoreCard& scorecard() const { return scorecard_; }
 
@@ -27,7 +27,7 @@ public:
     
     void setAgents(Agent& a, Agent& b);
 
-    void play();
+    void play(int seed);
 
     const std::array<ScoreCard, 2>& scorecards() const { return scorecards_; }
 
