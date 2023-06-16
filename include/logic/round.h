@@ -11,6 +11,8 @@
 
 struct HandId {
     u64 id;
+
+    friend bool operator==(const HandId& a, const HandId& b) { return a.id == b.id; }
 };
 
 struct Hand {
@@ -25,21 +27,21 @@ struct Hand {
 
     static Hand fromId(HandId id) {
         Hand hand;
-        hand.values[4] = id.id % 6;
+        hand.values[4] = id.id % 6 + 1;
         id.id /= 6;
-        hand.values[3] = id.id % 6;
+        hand.values[3] = id.id % 6 + 1;
         id.id /= 6;
-        hand.values[2] = id.id % 6;
+        hand.values[2] = id.id % 6 + 1;
         id.id /= 6;
-        hand.values[1] = id.id % 6;
+        hand.values[1] = id.id % 6 + 1;
         id.id /= 6;
-        hand.values[0] = id.id % 6;
+        hand.values[0] = id.id % 6 + 1;
         return hand;
     }
 
     HandId toId() const {
         u64 id = 0;
-        for(int v : values) id = 6*id+v;
+        for(int v : values) id = 6*id + (v-1);
         return HandId{id};
     }
 
@@ -52,21 +54,10 @@ struct Hand {
     }
 };
 
-namespace std {
-    template<>
-    struct hash<Hand> {
-        auto operator()(const Hand& hand) const -> size_t {
-            return hand.values[0]
-                +6*(hand.values[1]
-                +6*(hand.values[2]
-                +6*(hand.values[3]
-                +6*(hand.values[4]))));
-        }
-    };
-}
-
 struct ThrowId {
     u64 id;
+
+    friend bool operator==(const ThrowId& a, const ThrowId& b) { return a.id == b.id; }
 };
 
 struct Throw {
@@ -81,22 +72,22 @@ struct Throw {
 
     static Throw fromId(ThrowId id) {
         Throw t;
-        t.values[4] = id.id % 6;
+        t.values[0] = id.id % 6 + 1;
         id.id /= 6;
-        t.values[3] = id.id % 6;
+        t.values[1] = id.id % 6 + 1;
         id.id /= 6;
-        t.values[2] = id.id % 6;
+        t.values[2] = id.id % 6 + 1;
         id.id /= 6;
-        t.values[1] = id.id % 6;
+        t.values[3] = id.id % 6 + 1;
         id.id /= 6;
-        t.values[0] = id.id % 6;
+        t.values[4] = id.id % 6 + 1;
         return t;
     }
 
     ThrowId toId() const {
         u64 id = 0;
-        for(int i = 0; i < size; ++i) {
-            id = 6*id + values[i];
+        for(int i = size; i --> 0;) {
+            id = 6*id + (values[i]-1);
         }
         return ThrowId{id};
     }
@@ -104,6 +95,8 @@ struct Throw {
 
 struct RethrowId {
     u64 id;
+
+    friend bool operator==(const RethrowId& a, const RethrowId& b) { return a.id == b.id; }
 };
 
 struct Rethrow {
@@ -112,22 +105,27 @@ struct Rethrow {
 
     static Rethrow fromId(RethrowId id) {
         Rethrow rt;
-        rt.keptValues[4] = id.id % 6;
-        id.id /= 6;
-        rt.keptValues[3] = id.id % 6;
-        id.id /= 6;
-        rt.keptValues[2] = id.id % 6;
-        id.id /= 6;
-        rt.keptValues[1] = id.id % 6;
-        id.id /= 6;
-        rt.keptValues[0] = id.id % 6;
+        std::cout << id.id << " " << (int)rt.size << std::endl;
+        rt.keptValues[0] = id.id % 7;
+        id.id /= 7;
+        rt.keptValues[1] = id.id % 7;
+        id.id /= 7;
+        rt.keptValues[2] = id.id % 7;
+        id.id /= 7;
+        rt.keptValues[3] = id.id % 7;
+        id.id /= 7;
+        rt.keptValues[4] = id.id % 7;
+        for(rt.size = 0; rt.size < 5; ++rt.size) {
+            if(rt.keptValues[rt.size] == 0) break;
+        }
+        std::cout << id.id << " " << (int)rt.size << std::endl;
         return rt;
     }
 
     RethrowId toId() const {
         u64 id = 0;
-        for(int i = 0; i < size; ++i) {
-            id = 6*id + keptValues[i];
+        for(int i = size; i --> 0;) {
+            id = 7*id + keptValues[i];
         }
         return RethrowId{id};
     }
@@ -182,6 +180,31 @@ public:
 
     std::array<int, (int)Category::size> scores;
 };
+
+
+
+namespace std {
+    template<>
+    struct hash<Hand> {
+        auto operator()(const Hand& hand) const -> size_t {
+            return hand.toId().id;
+        }
+    };
+    
+    template<>
+    struct hash<HandId> {
+        auto operator()(const HandId& id) const -> size_t {
+            return id.id;
+        }
+    };
+
+    template<>
+    struct hash<RethrowId> {
+        auto operator()(const RethrowId& id) const -> size_t {
+            return id.id;
+        }
+    };
+}
 
 
 #endif

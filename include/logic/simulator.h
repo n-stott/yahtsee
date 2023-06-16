@@ -2,6 +2,7 @@
 #define SIMULATOR_H
 
 #include "logic/evaluator.h"
+#include "logic/gamegraph.h"
 #include "logic/round.h"
 #include "utils.h"
 #include <cmath>
@@ -14,13 +15,14 @@ public:
         PointEvaluator::eval_t evalSum;
         std::fill(evalSum.begin(), evalSum.end(), 0.0);
 
+        const auto& futures = GameGraph::graph_.at(hand.toId()).at(rt.toId());
+
         size_t nbEvals = 0;
-        Simulator::forAllThrows(5-rt.size, [&](const Throw& t) {
-            Hand newHand = combine(rt, t);
-            const auto& evalData = PointEvaluator::lookupEvaluation(newHand);
-            ++nbEvals;
-            for(size_t i = 0; i < evalData.evaluation.size(); ++i) evalSum[i] += evalData.evaluation[i];
-        });
+        for(const auto& e : futures) {
+            nbEvals += e.second;
+            const auto& evalData = PointEvaluator::lookupEvaluation(e.first);
+            for(size_t i = 0; i < evalData.evaluation.size(); ++i) evalSum[i] += e.second * evalData.evaluation[i];
+        }
 
         if(nbEvals != 0) {
             for(double& sc : evalSum) sc /= nbEvals;

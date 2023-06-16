@@ -21,7 +21,7 @@ Rethrow Greedy::decideRethrow(const Hand& hand, const ScoreCard& scoreCard, int)
 Category Greedy::decideCategory(const Hand& hand, const ScoreCard& scoreCard) {
     Category bestCategory = Category::CHANCE;
     int bestScore = -1;
-    const auto& evalData = PointEvaluator::lookupEvaluation(hand);
+    const auto& evalData = PointEvaluator::lookupEvaluation(hand.toId());
     for(int cat = 0; cat < (int)Category::size; ++cat) {
         if(scoreCard.scores[cat] != ScoreCard::AVAILABLE) continue;
         int value = evalData.evaluation[cat];

@@ -2,6 +2,7 @@
 #include "logic/evaluator.h"
 #include "logic/simulator.h"
 #include "logic/filters.h"
+#include "logic/gamegraph.h"
 #include "arena/arena.h"
 #include "agents/random.h"
 #include "agents/greedy.h"
@@ -81,6 +82,8 @@ void testAgent(const char* name, Args... args) {
 }
 
 int main() {
+
+    GameGraph::create();
 
     testAgent<Random>("random", 0);
     testAgent<Greedy>("greedy");

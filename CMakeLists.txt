@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.18)
 
 add_library(gamelogic
     src/logic/evaluator.cpp
+    src/logic/gamegraph.cpp
     src/arena/arena.cpp
     src/agents/random.cpp
     src/agents/greedy.cpp

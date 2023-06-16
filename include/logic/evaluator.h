@@ -7,6 +7,7 @@
 #include <unordered_map>
 
 class Hand;
+class HandId;
 
 class ProbabilityEvaluator {
 public:
@@ -40,9 +41,9 @@ public:
         eval_t evaluation {};
     };
 
-    static std::unordered_map<Hand, EvaluationData> evaluationCache_;
+    static std::unordered_map<HandId, EvaluationData> evaluationCache_;
 
-    static const EvaluationData& lookupEvaluation(const Hand& hand);
+    static const EvaluationData& lookupEvaluation(const HandId& id);
 
 };
 
