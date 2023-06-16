@@ -17,9 +17,9 @@ public:
         size_t nbEvals = 0;
         Simulator::forAllThrows(5-rt.size, [&](const Throw& t) {
             Hand newHand = combine(rt, t);
-            PointEvaluator::eval_t newEval = PointEvaluator::eval(newHand);
+            const auto& evalData = PointEvaluator::lookupEvaluation(newHand);
             ++nbEvals;
-            for(size_t i = 0; i < newEval.size(); ++i) evalSum[i] += newEval[i];
+            for(size_t i = 0; i < evalData.evaluation.size(); ++i) evalSum[i] += evalData.evaluation[i];
         });
 
         if(nbEvals != 0) {
@@ -43,9 +43,15 @@ public:
         }
     }
 
+    static int fastPow(int base, int exp) {
+        int value = 1;
+        while(exp--) value *= base;
+        return value;
+    }
+
     template<typename Callback>
     static void forAllThrows(u8 size, Callback&& callback) {
-        for(int mask = 0; mask < std::pow(6, size); ++mask) {
+        for(int mask = 0; mask < fastPow(6, size); ++mask) {
             Throw t;
             int m = mask;
             for(u8 i = 0; i < size; ++i) {

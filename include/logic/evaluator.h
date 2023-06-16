@@ -4,6 +4,7 @@
 #include "logic/enums.h"
 #include <array>
 #include <string>
+#include <unordered_map>
 
 class Hand;
 
@@ -34,6 +35,14 @@ public:
     }
 
     static std::string toString(const eval_t& e);
+
+    struct EvaluationData {
+        eval_t evaluation {};
+    };
+
+    static std::unordered_map<Hand, EvaluationData> evaluationCache_;
+
+    static const EvaluationData& lookupEvaluation(const Hand& hand);
 
 };
 

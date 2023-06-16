@@ -22,7 +22,24 @@ struct Hand {
     void sort() {
         std::sort(values.begin(), values.end());
     }
+
+    friend bool operator==(const Hand& a, const Hand& b) {
+        return a.values == b.values;
+    }
 };
+
+namespace std {
+    template<>
+    struct hash<Hand> {
+        auto operator()(const Hand& hand) const -> size_t {
+            return hand.values[0]
+                +6*(hand.values[1]
+                +6*(hand.values[2]
+                +6*(hand.values[3]
+                +6*(hand.values[4]))));
+        }
+    };
+}
 
 struct Throw {
     std::array<u8, 5> values {{ 0, 0, 0, 0, 0 }};

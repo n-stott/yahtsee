@@ -87,3 +87,21 @@ std::string PointEvaluator::toString(const eval_t& e) {
     });
     return s;
 }
+
+std::unordered_map<Hand, PointEvaluator::EvaluationData> PointEvaluator::evaluationCache_ = []() {
+    std::unordered_map<Hand, PointEvaluator::EvaluationData> cache;
+    
+    return cache;
+}();
+
+const PointEvaluator::EvaluationData& PointEvaluator::lookupEvaluation(const Hand& hand) {
+    auto it = evaluationCache_.find(hand);
+    if(it != evaluationCache_.end()) {
+        return it->second;
+    } else {
+        auto e = eval(hand);
+        EvaluationData data { e };
+        auto entry = evaluationCache_.emplace(std::make_pair(hand, data));
+        return entry.first->second;
+    }
+}
