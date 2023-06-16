@@ -4,6 +4,8 @@ cmake_minimum_required(VERSION 3.18)
 
 add_library(gamelogic
     src/logic/evaluator.cpp
+    src/arena/arena.cpp
+    src/agents/random.cpp
 )
 target_include_directories(gamelogic PUBLIC include)
 

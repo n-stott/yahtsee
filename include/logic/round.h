@@ -1,10 +1,12 @@
 #ifndef ROUND_H
 #define ROUND_H
 
+#include "logic/enums.h"
 #include "utils.h"
 #include <algorithm>
 #include <array>
 #include <cassert>
+#include <iostream>
 #include <string>
 
 struct Hand {
@@ -48,9 +50,45 @@ inline Hand combine(const Rethrow& rt, const Throw& t) {
     return h;
 }
 
-struct Round {
-    Hand hand;
-    u8 remainingThrows;
+class ScoreCard {
+public:
+    ScoreCard() {
+        std::fill(scores.begin(), scores.end(), AVAILABLE);
+    }
+
+    void write(Category cat, int points) {
+        assert(scores[(int)cat] == AVAILABLE);
+        scores[(int)cat] = points;
+    }
+
+    int currentScore() const {
+        int score = 0;
+        for(int v : scores) score += (v >= 0 ? v : 0);
+        score += bonus();
+        return score;
+    }
+
+    int bonus() const {
+        int value = 0;
+        value += scores[(int)Category::ACES];
+        value += scores[(int)Category::TWOS];
+        value += scores[(int)Category::THREES];
+        value += scores[(int)Category::FOURS];
+        value += scores[(int)Category::FIVES];
+        value += scores[(int)Category::SIXES];
+        return (value >= 63) ? 35 : 0;
+    }
+
+    void display() const {
+        forAllCategories([&](Category c) {
+            std::cout << toString(c) << " : " << scores[(int)c] << std::endl;
+        });
+    }
+
+    static constexpr int AVAILABLE = -1;
+
+    std::array<int, (int)Category::size> scores;
 };
+
 
 #endif

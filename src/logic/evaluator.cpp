@@ -1,5 +1,6 @@
 #include "logic/evaluator.h"
 #include "logic/round.h"
+#include "logic/enums.h"
 #include <algorithm>
 #include <cassert>
 #include <numeric>
@@ -73,4 +74,16 @@ PointEvaluator::eval_t PointEvaluator::eval(const Hand& hand) {
         ps[cat] = eval(hand, (Category)cat);
     }
     return ps;
+}
+
+
+std::string PointEvaluator::toString(const eval_t& e) {
+    std::string s;
+    forAllCategories([&](Category c) {
+        s += ::toString(c);
+        s += " ";
+        s += std::to_string(e[(int)c]);
+        s += '\n';
+    });
+    return s;
 }
