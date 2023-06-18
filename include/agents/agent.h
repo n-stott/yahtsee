@@ -11,6 +11,11 @@ public:
     virtual Rethrow decideRethrow(const Hand& hand, const ScoreCard& scoreCard, int remainingThrows) = 0;
 
     virtual Category decideCategory(const Hand& hand, const ScoreCard& scoreCard) = 0;
+
+    void setVerbosity(int level) { verbosity_ = level; }
+
+protected:
+    int verbosity_ = 0;
 };
 
 #endif

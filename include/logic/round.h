@@ -18,6 +18,12 @@ struct HandId {
 struct Hand {
     std::array<u8, 5> values;
 
+    std::string toString() const {
+        std::string s;
+        for(auto v : values) s += std::to_string((int)v)  + " ";
+        return s;
+    }
+
     static Hand fromArray(std::array<u8, 5> values) {
         Hand hand;
         hand.values = values;
@@ -129,6 +135,12 @@ struct Rethrow {
         }
         return RethrowId{id};
     }
+
+    std::string toString() const {
+        std::string s;
+        for(int i = 0; i < size; ++i) s += std::to_string((int)keptValues[i])  + " ";
+        return s;
+    }
 };
 
 inline Hand combine(const Rethrow& rt, const Throw& t) {
@@ -174,6 +186,13 @@ public:
         forAllCategories([&](Category c) {
             std::cout << toString(c) << " : " << scores[(int)c] << std::endl;
         });
+    }
+
+    bool hasAvailableFamily() const {
+        for(int cat = (int)Category::ACES; cat <= (int)Category::SIXES; ++cat) {
+            if(scores[cat] == AVAILABLE) return true;
+        }
+        return false;
     }
 
     static constexpr int AVAILABLE = -1;

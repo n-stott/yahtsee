@@ -21,6 +21,10 @@ enum class Category {
     size,
 };
 
+inline bool isFamily(Category cat) {
+    return (int)cat >= (int)Category::ACES && (int)cat <= (int)Category::SIXES;
+}
+
 template<typename Callback>
 inline static void forAllCategories(Callback&& callback) {
     for(int c = 0; c < (int)Category::size; ++c) {

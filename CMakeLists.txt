@@ -8,6 +8,8 @@ add_library(gamelogic
     src/arena/arena.cpp
     src/agents/random.cpp
     src/agents/greedy.cpp
+    src/agents/smartgreedy.cpp
+    src/agents/bonuspriorityzing.cpp
 )
 target_include_directories(gamelogic PUBLIC include)
 

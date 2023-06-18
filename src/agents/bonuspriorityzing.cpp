@@ -1,13 +1,16 @@
-#include "agents/greedy.h"
+#include "agents/bonuspriorityzing.h"
 #include "logic/simulator.h"
 
-Rethrow Greedy::decideRethrow(const Hand& hand, const ScoreCard& scoreCard, int) {  
+Rethrow BonusPriorityzing::decideRethrow(const Hand& hand, const ScoreCard& scoreCard, int) {  
     Rethrow bestRt;
     double bestExpectedScore = -1;
     Category bestCategory;
+    bool hasAvailableFamily = scoreCard.hasAvailableFamily();
     Simulator::forAllRethrows(hand, [&](const Hand& hand, const Rethrow& rt) {
         auto eval = Simulator::expectedScore(hand, rt);
-        for(int cat = 0; cat < (int)Category::size; ++cat) {
+        int begin = hasAvailableFamily ? (int)Category::ACES : (int)Category::THREE_OF_A_KIND;
+        int end = hasAvailableFamily ? (int)Category::THREE_OF_A_KIND : (int)Category::size;
+        for(int cat = begin; cat < end; ++cat) {
             if(scoreCard.scores[cat] != ScoreCard::AVAILABLE) continue;
             double value = eval[cat];
             if(value > bestExpectedScore) {
@@ -27,11 +30,14 @@ Rethrow Greedy::decideRethrow(const Hand& hand, const ScoreCard& scoreCard, int)
     return bestRt;
 }
 
-Category Greedy::decideCategory(const Hand& hand, const ScoreCard& scoreCard) {
+Category BonusPriorityzing::decideCategory(const Hand& hand, const ScoreCard& scoreCard) {
     Category bestCategory = Category::CHANCE;
     int bestScore = -1;
     const auto& evalData = PointEvaluator::lookupEvaluation(hand.toId());
-    for(int cat = 0; cat < (int)Category::size; ++cat) {
+    bool hasAvailableFamily = scoreCard.hasAvailableFamily();
+    int begin = hasAvailableFamily ? (int)Category::ACES : (int)Category::THREE_OF_A_KIND;
+    int end = hasAvailableFamily ? (int)Category::THREE_OF_A_KIND : (int)Category::size;
+    for(int cat = begin; cat < end; ++cat) {
         if(scoreCard.scores[cat] != ScoreCard::AVAILABLE) continue;
         int value = evalData.evaluation[cat];
         if(value > bestScore) {

@@ -6,6 +6,8 @@
 #include "arena/arena.h"
 #include "agents/random.h"
 #include "agents/greedy.h"
+#include "agents/smartgreedy.h"
+#include "agents/bonuspriorityzing.h"
 #include <iostream>
 #include <cstring>
 
@@ -72,6 +74,7 @@ void testAgent(const char* name, Args... args) {
     int nbRounds = 100;
     for(int seed = 0; seed < nbRounds; ++seed) {
         AgentType agent(args...);
+        // agent.setVerbosity(1);
         SinglePlayerArena arena;
         arena.setAgent(agent);
         arena.play(seed);
@@ -85,8 +88,10 @@ int main() {
 
     GameGraph::create();
 
-    testAgent<Random>("random", 0);
+    // testAgent<Random>("random", 0);
     testAgent<Greedy>("greedy");
+    testAgent<SmartGreedy>("smartgreedy");
+    testAgent<BonusPriorityzing>("bonusprio");
 
     // for(int i = 0; i < 100; ++i) {
     //     Random a(i);
