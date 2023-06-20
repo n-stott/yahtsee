@@ -29,6 +29,7 @@ void SinglePlayerArena::play(int seed) {
     scorecard_ = ScoreCard{};
     if(!agent_) return;
     RandomGenerator rg(seed);
+    agent_->beginGame();
     for(int round = 0; round < (int)Category::size; ++round) {
         Agent* agent = agent_;
         ScoreCard& scorecard = scorecard_;
@@ -46,6 +47,7 @@ void SinglePlayerArena::play(int seed) {
         Category category = agent->decideCategory(hand, scorecard);
         scorecard.write(category, PointEvaluator::eval(hand, category));
     }
+    agent_->endGame(scorecard_.currentScore());
 }
 
 void TwoPlayerArena::setAgents(Agent& a, Agent& b) {

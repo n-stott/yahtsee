@@ -7,6 +7,7 @@
 #include "utils.h"
 #include <cmath>
 #include <iostream>
+#include <unordered_map>
 
 class Simulator {
 public:
@@ -20,8 +21,8 @@ public:
         size_t nbEvals = 0;
         for(const auto& e : futures) {
             nbEvals += e.second;
-            const auto& evalData = PointEvaluator::lookupEvaluation(e.first);
-            for(size_t i = 0; i < evalData.evaluation.size(); ++i) evalSum[i] += e.second * evalData.evaluation[i];
+            const auto& evalData = GameGraph::handEval_.at(e.first);
+            for(size_t i = 0; i < evalData.size(); ++i) evalSum[i] += e.second * evalData[i];
         }
 
         if(nbEvals != 0) {
@@ -45,6 +46,14 @@ public:
         }
     }
 
+    template<typename Callback>
+    static void forAllRethrows2(const Hand& hand, Callback&& callback) {
+        HandId hid = hand.toId();
+        assert(rethrows_.contains(hid));
+        const auto& rts = rethrows_[hid];
+        for(const Rethrow& rt : rts) callback(hand, rt);
+    }
+
     static int fastPow(int base, int exp) {
         int value = 1;
         while(exp--) value *= base;
@@ -64,6 +73,9 @@ public:
             callback(t);
         }
     }
+
+private:
+    static std::unordered_map<HandId, std::vector<Rethrow>> rethrows_;
 
 };
 

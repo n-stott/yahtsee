@@ -111,7 +111,7 @@ struct Rethrow {
 
     static Rethrow fromId(RethrowId id) {
         Rethrow rt;
-        std::cout << id.id << " " << (int)rt.size << std::endl;
+        // std::cout << id.id << " " << (int)rt.size << std::endl;
         rt.keptValues[0] = id.id % 7;
         id.id /= 7;
         rt.keptValues[1] = id.id % 7;
@@ -124,7 +124,7 @@ struct Rethrow {
         for(rt.size = 0; rt.size < 5; ++rt.size) {
             if(rt.keptValues[rt.size] == 0) break;
         }
-        std::cout << id.id << " " << (int)rt.size << std::endl;
+        // std::cout << id.id << " " << (int)rt.size << std::endl;
         return rt;
     }
 
@@ -153,10 +153,28 @@ inline Hand combine(const Rethrow& rt, const Throw& t) {
     return h;
 }
 
+struct ScoreCardId {
+    u64 id;
+
+    bool isAvailable(Category cat) const {
+        return id & (1 << (int)cat);
+    }
+
+    friend bool operator==(const ScoreCardId& a, const ScoreCardId& b) { return a.id == b.id; }
+};
+
 class ScoreCard {
 public:
     ScoreCard() {
         std::fill(scores.begin(), scores.end(), AVAILABLE);
+    }
+
+    ScoreCardId toId() const {
+        u64 mask = 0;
+        for(int i = 0; i < (int)Category::size; ++i) {
+            if(scores[i] == AVAILABLE) mask |= (1 << i);
+        }
+        return ScoreCardId{mask};
     }
 
     void write(Category cat, int points) {
@@ -220,6 +238,13 @@ namespace std {
     template<>
     struct hash<RethrowId> {
         auto operator()(const RethrowId& id) const -> size_t {
+            return id.id;
+        }
+    };
+
+    template<>
+    struct hash<ScoreCardId> {
+        auto operator()(const ScoreCardId& id) const -> size_t {
             return id.id;
         }
     };

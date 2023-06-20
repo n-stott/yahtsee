@@ -8,6 +8,7 @@
 #include "agents/greedy.h"
 #include "agents/smartgreedy.h"
 #include "agents/bonuspriorityzing.h"
+#include "agents/learner.h"
 #include <iostream>
 #include <cstring>
 
@@ -88,10 +89,11 @@ int main() {
 
     GameGraph::create();
 
-    // testAgent<Random>("random", 0);
+    testAgent<Random>("random", 0);
     testAgent<Greedy>("greedy");
     testAgent<SmartGreedy>("smartgreedy");
     testAgent<BonusPriorityzing>("bonusprio");
+    // testAgent<Learner>("learner");
 
     // for(int i = 0; i < 100; ++i) {
     //     Random a(i);

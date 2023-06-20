@@ -7,6 +7,14 @@
 class Agent {
 public:
     virtual ~Agent() = default;
+
+    virtual void beginGame() {
+
+    };
+    
+    virtual void endGame(int score) {
+        (void)score;
+    };
     
     virtual Rethrow decideRethrow(const Hand& hand, const ScoreCard& scoreCard, int remainingThrows) = 0;
 

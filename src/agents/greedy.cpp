@@ -5,7 +5,7 @@ Rethrow Greedy::decideRethrow(const Hand& hand, const ScoreCard& scoreCard, int)
     Rethrow bestRt;
     double bestExpectedScore = -1;
     Category bestCategory;
-    Simulator::forAllRethrows(hand, [&](const Hand& hand, const Rethrow& rt) {
+    Simulator::forAllRethrows2(hand, [&](const Hand& hand, const Rethrow& rt) {
         auto eval = Simulator::expectedScore(hand, rt);
         for(int cat = 0; cat < (int)Category::size; ++cat) {
             if(scoreCard.scores[cat] != ScoreCard::AVAILABLE) continue;
@@ -30,10 +30,10 @@ Rethrow Greedy::decideRethrow(const Hand& hand, const ScoreCard& scoreCard, int)
 Category Greedy::decideCategory(const Hand& hand, const ScoreCard& scoreCard) {
     Category bestCategory = Category::CHANCE;
     int bestScore = -1;
-    const auto& evalData = PointEvaluator::lookupEvaluation(hand.toId());
+    const auto& evalData = GameGraph::handEval_.at(hand.toId());
     for(int cat = 0; cat < (int)Category::size; ++cat) {
         if(scoreCard.scores[cat] != ScoreCard::AVAILABLE) continue;
-        int value = evalData.evaluation[cat];
+        int value = evalData[cat];
         if(value > bestScore) {
             bestCategory = (Category)cat;
             bestScore = value;
