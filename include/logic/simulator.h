@@ -46,6 +46,26 @@ public:
 
         return evalSum;
     }
+    
+    static PointEvaluator::eval_t expectedSuccess(const Hand& hand, const Rethrow& rt) {
+        PointEvaluator::eval_t evalSum;
+        std::fill(evalSum.begin(), evalSum.end(), 0.0);
+
+        const auto& futures = GameGraph::graph_.at(hand.toId()).at(rt.toId());
+
+        size_t nbEvals = 0;
+        for(const auto& e : futures) {
+            nbEvals += e.second;
+            const auto& evalData = GameGraph::handEval_.at(e.first);
+            for(size_t i = 0; i < evalData.size(); ++i) evalSum[i] += e.second * (evalData[i] > 0);
+        }
+
+        if(nbEvals != 0) {
+            for(double& sc : evalSum) sc /= nbEvals;
+        }
+
+        return evalSum;
+    }
 
     template<typename Callback>
     static void forAllRethrows(const Hand& hand, Callback&& callback) {

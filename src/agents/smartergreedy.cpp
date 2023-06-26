@@ -17,16 +17,22 @@ Rethrow SmarterGreedy::decideRethrow(const Hand& hand, const ScoreCard& scoreCar
     Rethrow bestRt;
     double bestExpectedScore = -1;
     double bestExpectedMean = -1;
+    int nbAvailable = std::count(scoreCard.scores.begin(), scoreCard.scores.end(), ScoreCard::AVAILABLE);
     Category bestCategory;
     Simulator::forAllRethrows2(hand, [&](const Hand& hand, const Rethrow& rt) {
         auto eval = Simulator::expectedScore(hand, rt);
         double meanEval = mean(eval, scoreCard);
         for(int cat = 0; cat < (int)Category::size; ++cat) {
             if(scoreCard.scores[cat] != ScoreCard::AVAILABLE) continue;
-            double value = eval[cat];
-            if(value > bestExpectedScore || (value == bestExpectedScore && meanEval > bestExpectedMean)) {
+            if((Category)cat == Category::CHANCE) {
+                if(nbAvailable != 1 && bestExpectedScore >= 1) continue;
+            }
+            double score = eval[cat];
+
+            if (score > bestExpectedScore
+            || (score == bestExpectedScore && meanEval > bestExpectedMean)) {
                 bestRt = rt;
-                bestExpectedScore = value;
+                bestExpectedScore = score;
                 bestExpectedMean = meanEval;
                 bestCategory = (Category)cat;
             }
@@ -44,10 +50,16 @@ Rethrow SmarterGreedy::decideRethrow(const Hand& hand, const ScoreCard& scoreCar
 
 Category SmarterGreedy::decideCategory(const Hand& hand, const ScoreCard& scoreCard) {
     Category bestCategory = Category::CHANCE;
+    int nbAvailable = std::count(scoreCard.scores.begin(), scoreCard.scores.end(), ScoreCard::AVAILABLE);
     int bestScore = -1;
     const auto& evalData = GameGraph::handEval_.at(hand.toId());
     for(int cat = 0; cat < (int)Category::size; ++cat) {
         if(scoreCard.scores[cat] != ScoreCard::AVAILABLE) continue;
+        if((Category)cat == Category::CHANCE) {
+            if(nbAvailable != 1) {
+                if(isFamily(bestCategory) && bestScore >= 3*((int)bestCategory+1)) continue;
+            }
+        }
         int value = evalData[cat];
         if(value > bestScore) {
             bestCategory = (Category)cat;
