@@ -2,7 +2,9 @@
 #define LEARNER_H
 
 #include "agents/agent.h"
+#include "arena/randomgenerator.h"
 #include <unordered_map>
+#include <vector>
 
 struct HandId;
 struct ScoreCardId;
@@ -24,10 +26,26 @@ private:
     template<typename K, typename V>
     using map = std::unordered_map<K, V>;
 
-    map<HandId, map<Category, std::vector<std::pair<RethrowId, double>>>> lookupRethrow_;
-    map<HandId, map<Category, std::vector<std::pair<Category, double>>>> lookupCategory_;
+    map<int, map<HandId, map<ScoreCardId, RethrowId>>> r;
+    map<HandId, map<ScoreCardId, Category>> d;
 
-    map<HandId, std::vector<RethrowId>> allRethrows_;
+    struct Roll {
+        int remaining;
+        HandId hid;
+        ScoreCardId scid;
+        RethrowId rid;
+    };
+
+    struct Decision {
+        HandId hid;
+        ScoreCardId scid;
+        Category cat;
+    };
+
+    std::vector<Roll> rolls_;
+    std::vector<Decision> decisions_;
+
+    RandomGenerator rng;
 };
 
 #endif

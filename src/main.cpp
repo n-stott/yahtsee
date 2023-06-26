@@ -7,6 +7,8 @@
 #include "agents/random.h"
 #include "agents/greedy.h"
 #include "agents/smartgreedy.h"
+#include "agents/smartergreedy.h"
+#include "agents/pgreedy.h"
 #include "agents/bonuspriorityzing.h"
 #include "agents/learner.h"
 #include <iostream>
@@ -81,6 +83,8 @@ void testAgent(const char* name, Args... args) {
         arena.play(seed);
         const auto& scores = arena.scorecard();
         totalScore += scores.currentScore();
+        // scores.display();
+        // std::cout << scores.currentScore() << std::endl;
     }
     std::cout << name << " : " << totalScore/nbRounds << std::endl;
 }
@@ -89,9 +93,37 @@ int main() {
 
     GameGraph::create();
 
-    testAgent<Random>("random", 0);
+    // Hand h = Hand::fromArray({1, 1, 1, 6, 6});
+    // for(int remainingThrows = 0; remainingThrows <= 2; ++remainingThrows) {
+    //     auto best = ProbabilityEvaluator::evalGoal(h, remainingThrows, Category::SIXES, 4);
+    //     std::cout << h.toString() << " " << remainingThrows << " " << best.first << " " << (best.second.has_value() ? best.second->toString() : "") << std::endl;
+    // }
+    // std::cout << std::endl;
+
+    // h = Hand::fromArray({1, 2, 3, 3, 6});
+    // for(int remainingThrows = 0; remainingThrows <= 2; ++remainingThrows) {
+    //     auto best = ProbabilityEvaluator::evalSuccess(h, remainingThrows, Category::YATHSEE);
+    //     std::cout << h.toString() << " " << remainingThrows << " " << best.first << " " << (best.second.has_value() ? best.second->toString() : "") << std::endl;
+    // }
+
+
+    // for(const auto& p : GameGraph::expectedScore1_) {
+    //     for(const auto& q : p.second) {
+    //         std::cout << p.first.id << " ";
+    //         std::cout << "| ";
+    //         Rethrow rt = Rethrow::fromId(q.first);
+    //         for(int i = 0; i < rt.size; ++i) std::cout << (int)rt.keptValues[i] << " ";
+    //         std::cout << "| ";
+    //         for(const auto& v : q.second) std::cout << v << " ";
+    //         std::cout << std::endl;
+    //     }
+    // }
+
+    // testAgent<Random>("random", 0);
     testAgent<Greedy>("greedy");
     testAgent<SmartGreedy>("smartgreedy");
+    testAgent<SmarterGreedy>("smartergreedy");
+    // testAgent<PGreedy>("pgreedy");
     testAgent<BonusPriorityzing>("bonusprio");
     // testAgent<Learner>("learner");
 

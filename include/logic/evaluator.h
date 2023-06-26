@@ -2,8 +2,11 @@
 #define EVALUATOR_H
 
 #include "logic/enums.h"
+#include "logic/round.h"
 #include <array>
+#include <optional>
 #include <string>
+#include <utility>
 #include <unordered_map>
 
 class Hand;
@@ -11,9 +14,17 @@ class HandId;
 
 class ProbabilityEvaluator {
 public:
-    using eval_t = std::array<double, (int)Category::size>;
 
-    static eval_t eval(const Hand& hand, int remainingThrows);
+    enum class Type {
+        GOAL,
+        SUCCESS,
+        CHANCE,
+    };
+
+    static Type typeOfCategory(Category cat);
+
+    static std::pair<double, std::optional<Rethrow>> evalGoal(const Hand& hand, int remainingThrows, Category category, int goalCount);
+    static std::pair<double, std::optional<Rethrow>> evalSuccess(const Hand& hand, int remainingThrows, Category category);
 
 private:
 

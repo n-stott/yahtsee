@@ -13,8 +13,6 @@ void GameGraph::create() {
         graph_[hand.toId()] = {};
     });
 
-    std::cout << graph_.size() << std::endl;
-
     for(auto it = graph_.begin(); it != graph_.end(); ++it) {
         HandId hid = it->first;
         Hand hand = Hand::fromId(hid);

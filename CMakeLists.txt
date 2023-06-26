@@ -10,6 +10,8 @@ add_library(gamelogic
     src/agents/random.cpp
     src/agents/greedy.cpp
     src/agents/smartgreedy.cpp
+    src/agents/smartergreedy.cpp
+    src/agents/pgreedy.cpp
     src/agents/bonuspriorityzing.cpp
     src/agents/learner.cpp
 )

@@ -12,6 +12,21 @@
 class Simulator {
 public:
 
+    static double expectedScore(const Hand& hand, const Rethrow& rt, Category cat) {
+        double evalSum = 0.0;
+
+        const auto& futures = GameGraph::graph_.at(hand.toId()).at(rt.toId());
+
+        size_t nbEvals = 0;
+        for(const auto& e : futures) {
+            nbEvals += e.second;
+            const auto& evalData = GameGraph::handEval_.at(e.first);
+            evalSum += e.second * evalData[(int)cat];
+        }
+        if(nbEvals != 0) evalSum /= nbEvals;
+        return evalSum;
+    }
+
     static PointEvaluator::eval_t expectedScore(const Hand& hand, const Rethrow& rt) {
         PointEvaluator::eval_t evalSum;
         std::fill(evalSum.begin(), evalSum.end(), 0.0);
