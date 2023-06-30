@@ -196,15 +196,15 @@ int PointEvaluator::eval(const Hand& hand, Category category) {
         case Category::SIXES:  return std::count(hand.values.begin(), hand.values.end(), 6) * 6;
         case Category::THREE_OF_A_KIND: {
             const auto& values = hand.values;
-            if(values[0] == values[2]) return 3*values[0];
-            if(values[1] == values[3]) return 3*values[1];
-            if(values[2] == values[4]) return 3*values[2];
+            if(values[0] == values[2]) return std::accumulate(hand.values.begin(), hand.values.end(), 0);
+            if(values[1] == values[3]) return std::accumulate(hand.values.begin(), hand.values.end(), 0);
+            if(values[2] == values[4]) return std::accumulate(hand.values.begin(), hand.values.end(), 0);
             return 0;
         }
         case Category::FOUR_OF_A_KIND: {
             const auto& values = hand.values;
-            if(values[0] == values[3]) return 4*values[0];
-            if(values[1] == values[4]) return 4*values[1];
+            if(values[0] == values[3]) return std::accumulate(hand.values.begin(), hand.values.end(), 0);;
+            if(values[1] == values[4]) return std::accumulate(hand.values.begin(), hand.values.end(), 0);;
             return 0;
         }
         case Category::FULL_HOUSE: {
