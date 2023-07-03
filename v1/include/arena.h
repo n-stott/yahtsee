@@ -7,17 +7,9 @@ class Agent;
 
 class Arena {
 public:
-    Arena() = default;
-    
-    void setAgent(Agent& a);
-
-    void play(int seed);
-
-    const ScoreCard& scorecard() const { return scorecard_; }
+    ScoreCard play(Agent& agent, int seed);
 
 private:
-    Agent* agent_ = nullptr;
-    ScoreCard scorecard_;
 };
 
 #endif

@@ -33,6 +33,7 @@ public:
     }
 
     static Hand randomHand(Quickrand& qr);
+    static unsigned int maxId();
 
 private:
     unsigned int id_;
@@ -40,7 +41,6 @@ private:
     explicit Hand() = default;
 
     static unsigned int hash(const int dice[]);
-    static unsigned int maxId();
 
     unsigned int computeHash() const;
 

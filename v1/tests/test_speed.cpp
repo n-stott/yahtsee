@@ -6,10 +6,9 @@
 int main() {
     Arena arena;
     Random randomAgent(0);
-    arena.setAgent(randomAgent);
     auto begin = std::chrono::steady_clock::now();
     for(int seed = 0; seed < 1000000; ++seed) {
-        arena.play(seed);
+        arena.play(randomAgent, seed);
     }
     auto end = std::chrono::steady_clock::now();
 #ifndef NDEBUG

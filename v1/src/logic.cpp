@@ -349,6 +349,7 @@ std::unique_ptr<GameGraph> GameGraph::create() {
             for(int i = 0; i < 5; ++i) if (m & (1 << i)) vals[size++] = hand[i];
             std::fill(counts.begin(), counts.end(), 0);
             if(size == 5) {
+                rfuts.push_back(hand);
                 counts[hand.id()] += 1;
             } else if (size == 4) {
                 for(const auto& rt : rt1) {

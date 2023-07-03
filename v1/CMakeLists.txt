@@ -9,6 +9,7 @@ add_executable(yahtsee
     src/main.cpp
 )
 # target_compile_options(yahtsee PUBLIC -g)
+target_compile_options(yahtsee PUBLIC -Werror -Wall -Wextra -Wpedantic)
 target_include_directories(yahtsee PUBLIC include)
 
 enable_testing()
