@@ -9,6 +9,8 @@
 #include <unordered_map>
 #include <vector>
 
+class Quickrand;
+
 class Hand {
 public:
     explicit Hand(int, int, int, int, int);
@@ -30,6 +32,8 @@ public:
         for(size_t id = 0; id < handCache_.size(); ++id) func(Hand::fromId(id));
     }
 
+    static Hand randomHand(Quickrand& qr);
+
 private:
     unsigned int id_;
 
@@ -48,6 +52,7 @@ private:
     static Hand fromHash(unsigned int hash);
 
     static std::vector<std::array<int, 5>> handCache_;
+    static std::vector<unsigned int> allHandsById_;
     static std::vector<unsigned int> hashCache_;
     static std::unordered_map<unsigned int, unsigned int> hashToId_;
 };
@@ -58,6 +63,7 @@ public:
 
     int size() const;
     unsigned int mask() const;
+    bool isSet(unsigned int pos) const;
 
     std::string toString() const;
 
@@ -90,6 +96,8 @@ public:
     int score(Category category) const;
     bool hasBonus() const;
 
+    int currentScore() const;
+
     static int eval(Category category, Hand hand);
     static const std::array<int, NB_CATEGORIES>& eval(Hand hand);
 
@@ -100,6 +108,7 @@ public:
 private:
     std::array<int, NB_CATEGORIES> scores_;
     int familiesScore_;
+    int totalScore_;
     unsigned int availabilityMask_;
 
     static std::array<int, NB_CATEGORIES> internalEval(Hand hand);
@@ -117,6 +126,8 @@ public:
 
     const std::vector<std::pair<Hand, int>>& futures(Hand hand, Kept kept) const;
 
+    Hand randomHandAfterKept(Hand hand, Kept kept, Quickrand& qr) const;
+
 private:
     GameGraph();
 
@@ -125,6 +136,7 @@ private:
     std::vector<std::vector<Kept>> possibleKept_;
 
     std::vector<std::vector<std::vector<std::pair<Hand, int>>>> edges_;
+    std::vector<std::vector<std::vector<Hand>>> rawEdges_;
 };
 
 class EvaluationGraph {

@@ -1,4 +1,6 @@
 #include "logic.h"
+#include "arena.h"
+#include "agents/random.h"
 #include <iostream>
 #include <cassert>
 
@@ -15,17 +17,10 @@ void testHandConsistency() {
 }
 
 int main() {
-
-    Hand hand { 1, 1, 2, 3, 4 };
-    Kept kept(0b01111);
-    EvaluationGraph eg;
-    for(unsigned int i = 0; i < (1 << NB_CATEGORIES); ++i) {
-        std::cout << i << std::endl;
-        auto e = eg.expectedScore(i, hand, kept);
+    Arena arena;
+    Random randomAgent(0);
+    arena.setAgent(randomAgent);
+    for(int seed = 0; seed < 1000000; ++seed) {
+        arena.play(seed);
     }
-    // for(double d : e) {
-    //     std::cout << d << std::endl;
-    // }
-
-
 }

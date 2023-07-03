@@ -1,4 +1,5 @@
 #include "logic.h"
+#include "utils.h"
 #include <algorithm>
 #include <cassert>
 #include <cmath>
@@ -6,6 +7,7 @@
 #include <map>
 
 std::vector<std::array<int, 5>> Hand::handCache_;
+std::vector<unsigned int> Hand::allHandsById_;
 std::vector<unsigned int> Hand::hashCache_;
 std::unordered_map<unsigned int, unsigned int> Hand::hashToId_;
 
@@ -28,6 +30,7 @@ Hand::Hand(int ds[]) {
 }
 
 Hand Hand::fromId(unsigned int id) {
+    assert(id < maxId());
     Hand hand;
     hand.id_ = id;
     return hand;
@@ -89,6 +92,27 @@ std::string Hand::toString() const {
     return s;
 }
 
+Hand Hand::randomHand(Quickrand& qr) {
+    if(allHandsById_.empty()) {
+        for(int a = 1; a <= 6; ++a) {
+            for(int b = 1; b <= 6; ++b) {
+                for(int c = 1; c <= 6; ++c) {
+                    for(int d = 1; d <= 6; ++d) {
+                        for(int e = 1; e <= 6; ++e) {
+                            std::array<int, 5> dice {{ a, b, c, d, e }};
+                            unsigned int hash = Hand::hash(dice.data());
+                            Hand hand = Hand::fromHash(hash);
+                            allHandsById_.push_back(hand.id());
+                        }
+                    }
+                }
+            }
+        }
+    }
+    unsigned int pos = qr.next(0, allHandsById_.size()-1);
+    return Hand::fromId(allHandsById_[pos]);
+}
+
 void Hand::createCache() {
     std::vector<std::array<int, 5>> cache;
     for(int a = 1; a <= 6; ++a) {
@@ -116,7 +140,7 @@ void Hand::createCache() {
     std::swap(hashCache_, hashCache);
 
     std::unordered_map<unsigned int, unsigned int> hashToId;
-    for(size_t id = 0; id < cache.size(); ++id) {
+    for(size_t id = 0; id < handCache_.size(); ++id) {
         Hand h = Hand::fromId(id);
         hashToId[h.hash()] = id;
     }
@@ -131,6 +155,11 @@ int Kept::size() const {
 
 unsigned int Kept::mask() const {
     return mask_;
+}
+
+bool Kept::isSet(unsigned int pos) const {
+    assert(pos < 5);
+    return mask_ & (1 << pos);
 }
 
 std::string Kept::toString() const {
@@ -162,6 +191,10 @@ bool ScoreCard::hasBonus() const {
     return familiesScore_ >= 63;
 }
 
+int ScoreCard::currentScore() const {
+    return totalScore_ + hasBonus() * 35;
+}
+
 int ScoreCard::eval(Category category, Hand hand) {
     if(evalCache_.empty()) createCache();
     return evalCache_[hand.id()][category];
@@ -178,6 +211,7 @@ bool ScoreCard::write(Category category, int score) {
     scores_[category] = score;
     availabilityMask_ &= ~(1 << category);
     if(category <= SIXES) familiesScore_ += score;
+    totalScore_ += score;
     return true;
 }
 
@@ -249,6 +283,14 @@ const std::vector<std::pair<Hand, int>>& GameGraph::futures(Hand hand, Kept kept
     return edges_[hand.id()][kept.mask()];
 }
 
+Hand GameGraph::randomHandAfterKept(Hand hand, Kept kept, Quickrand& qr) const {
+    assert(hand.id() < rawEdges_.size());
+    assert(kept.mask() < rawEdges_[hand.id()].size());
+    const auto& rfuts = rawEdges_[hand.id()][kept.mask()];
+    int pos = qr.next(0, rfuts.size()-1);
+    return rfuts[pos];
+}
+
 GameGraph::GameGraph() = default;
 
 std::unique_ptr<GameGraph> GameGraph::create() {
@@ -294,11 +336,14 @@ std::unique_ptr<GameGraph> GameGraph::create() {
     }
 
     std::vector<std::vector<std::vector<std::pair<Hand, int>>>> edges;
+    std::vector<std::vector<std::vector<Hand>>> rawEdges;
     std::vector<int> counts;
     counts.resize(Hand::maxId(), 0);
     Hand::forAllHands([&](Hand hand) {
         std::vector<std::vector<std::pair<Hand, int>>> es;
+        std::vector<std::vector<Hand>> res;
         for(int m = 0; m < 32; ++m) {
+            std::vector<Hand> rfuts;
             std::array<int, 5> vals;
             int size = 0;
             for(int i = 0; i < 5; ++i) if (m & (1 << i)) vals[size++] = hand[i];
@@ -310,6 +355,7 @@ std::unique_ptr<GameGraph> GameGraph::create() {
                     std::array<int, 5> dice {{ vals[0], vals[1], vals[2], vals[3], rt[0] }};
                     int hash = Hand::hash(dice.data());
                     Hand h = Hand::fromHash(hash);
+                    rfuts.push_back(h);
                     counts[h.id()] += 1;
                 }
             } else if (size == 3) {
@@ -317,6 +363,7 @@ std::unique_ptr<GameGraph> GameGraph::create() {
                     std::array<int, 5> dice {{ vals[0], vals[1], vals[2], rt[0], rt[1] }};
                     int hash = Hand::hash(dice.data());
                     Hand h = Hand::fromHash(hash);
+                    rfuts.push_back(h);
                     counts[h.id()] += 1;
                 }
             } else if (size == 2) {
@@ -324,6 +371,7 @@ std::unique_ptr<GameGraph> GameGraph::create() {
                     std::array<int, 5> dice {{ vals[0], vals[1], rt[0], rt[1], rt[2] }};
                     int hash = Hand::hash(dice.data());
                     Hand h = Hand::fromHash(hash);
+                    rfuts.push_back(h);
                     counts[h.id()] += 1;
                 }
             } else if (size == 1) {
@@ -331,6 +379,7 @@ std::unique_ptr<GameGraph> GameGraph::create() {
                     std::array<int, 5> dice {{ vals[0], rt[0], rt[1], rt[2], rt[3] }};
                     int hash = Hand::hash(dice.data());
                     Hand h = Hand::fromHash(hash);
+                    rfuts.push_back(h);
                     counts[h.id()] += 1;
                 }
             } else if (size == 0) {
@@ -338,22 +387,26 @@ std::unique_ptr<GameGraph> GameGraph::create() {
                     std::array<int, 5> dice {{ rt[0], rt[1], rt[2], rt[3], rt[4] }};
                     int hash = Hand::hash(dice.data());
                     Hand h = Hand::fromHash(hash);
+                    rfuts.push_back(h);
                     counts[h.id()] += 1;
                 }
             }
-            std::vector<std::pair<Hand, int>> futs2;
+            std::vector<std::pair<Hand, int>> futs;
             for(size_t i = 0; i < counts.size(); ++i) {
                 if(counts[i] == 0) continue;
-                futs2.push_back(std::make_pair(Hand::fromId(i), counts[i]));
+                futs.push_back(std::make_pair(Hand::fromId(i), counts[i]));
             }
-            es.push_back(futs2);
+            es.push_back(std::move(futs));
+            res.push_back(std::move(rfuts));
         }
-        edges.push_back(es);
+        edges.push_back(std::move(es));
+        rawEdges.push_back(std::move(res));
     });
 
     auto gg = std::unique_ptr<GameGraph>(new GameGraph());
     std::swap(gg->possibleKept_, possibleKept);
     std::swap(gg->edges_, edges);
+    std::swap(gg->rawEdges_, rawEdges);
     return gg;
 }
 
