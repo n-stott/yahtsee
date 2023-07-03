@@ -16,6 +16,16 @@ void testHandConsistency() {
 
 int main() {
 
-    auto gg = GameGraph::tryCreate();
+    Hand hand { 1, 1, 2, 3, 4 };
+    Kept kept(0b01111);
+    EvaluationGraph eg;
+    for(unsigned int i = 0; i < (1 << NB_CATEGORIES); ++i) {
+        std::cout << i << std::endl;
+        auto e = eg.expectedScore(i, hand, kept);
+    }
+    // for(double d : e) {
+    //     std::cout << d << std::endl;
+    // }
+
 
 }

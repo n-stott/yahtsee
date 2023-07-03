@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <iostream>
 #include <map>
 
 std::vector<std::array<int, 5>> Hand::handCache_;
@@ -132,6 +133,14 @@ unsigned int Kept::mask() const {
     return mask_;
 }
 
+std::string Kept::toString() const {
+    std::string s;
+    for(int i = 0; i < 5; ++i) {
+        s += (mask_ & (1 << i)) ? "1" : "0";
+    }
+    return s;
+}
+
 std::vector<std::array<int, NB_CATEGORIES>> ScoreCard::evalCache_;
 
 ScoreCard::ScoreCard() {
@@ -156,6 +165,11 @@ bool ScoreCard::hasBonus() const {
 int ScoreCard::eval(Category category, Hand hand) {
     if(evalCache_.empty()) createCache();
     return evalCache_[hand.id()][category];
+}
+
+const std::array<int, NB_CATEGORIES>& ScoreCard::eval(Hand hand) {
+    if(evalCache_.empty()) createCache();
+    return evalCache_[hand.id()];
 }
 
 bool ScoreCard::write(Category category, int score) {
@@ -201,12 +215,12 @@ std::array<int, NB_CATEGORIES> ScoreCard::internalEval(Hand hand) {
     score[THREE_OF_A_KIND] = (maxOccurence >= 3) * sum;
     score[FOUR_OF_A_KIND] = (maxOccurence >= 4) * sum;
     score[FULL_HOUSE] = 25 * (nbDuos == 1 && nbTrios == 1);
-    score[SMALL_STRAIGHT] = (occurrences[3] >= 1 && occurrences[4] >= 1) 
-                            && ((occurrences[1] >= 1 && occurrences[2] >= 1) 
-                             || (occurrences[2] >= 1 && occurrences[5] >= 1) 
-                             || (occurrences[5] >= 1 && occurrences[6] >= 1));
-    score[LARGE_STRAIGHT] = (occurrences[2] >= 1 && occurrences[3] >= 1 && occurrences[4] >= 1 && occurrences[5] >= 1)
-                            && (occurrences[1] >= 1 || occurrences[6] >= 1);
+    score[SMALL_STRAIGHT] = 30 * ((occurrences[3] >= 1 && occurrences[4] >= 1)
+                                 && ((occurrences[1] >= 1 && occurrences[2] >= 1) 
+                                 || (occurrences[2] >= 1 && occurrences[5] >= 1) 
+                                 || (occurrences[5] >= 1 && occurrences[6] >= 1)));
+    score[LARGE_STRAIGHT] = 40 * ((occurrences[2] >= 1 && occurrences[3] >= 1 && occurrences[4] >= 1 && occurrences[5] >= 1)
+                                 && (occurrences[1] >= 1 || occurrences[6] >= 1));
     score[YAHTSEE] = 50 * (maxOccurence == 5);
     score[CHANCE] = sum;
 
@@ -237,7 +251,7 @@ const std::vector<std::pair<Hand, int>>& GameGraph::futures(Hand hand, Kept kept
 
 GameGraph::GameGraph() = default;
 
-std::unique_ptr<GameGraph> GameGraph::tryCreate() {
+std::unique_ptr<GameGraph> GameGraph::create() {
     std::vector<std::vector<Kept>> possibleKept;
     Hand::forAllHands([&](Hand hand) {
         std::map<unsigned int, unsigned int> map;
@@ -341,4 +355,55 @@ std::unique_ptr<GameGraph> GameGraph::tryCreate() {
     std::swap(gg->possibleKept_, possibleKept);
     std::swap(gg->edges_, edges);
     return gg;
+}
+
+const GameGraph* GameGraph::the() {
+    static auto gg = GameGraph::create();
+    return gg.get();
+}
+
+std::vector<std::vector<std::vector<std::array<double, NB_CATEGORIES>>>> EvaluationGraph::expectedScoreCache_;
+
+const std::array<int, NB_CATEGORIES>& EvaluationGraph::score(Hand hand) const {
+    return ScoreCard::eval(hand);
+}
+
+const std::array<double, NB_CATEGORIES>& EvaluationGraph::expectedScore(unsigned int categoryMask, Hand hand, Kept kept) const {
+    if(expectedScoreCache_.empty()) createCache();
+    categoryMask &= ((1 << NB_CATEGORIES) - 1); // mask out unused bits
+    if(expectedScoreCache_[categoryMask].empty()) createCache(categoryMask);
+    return expectedScoreCache_[categoryMask][hand.id()][kept.mask()];
+}
+
+void EvaluationGraph::createCache() {
+    expectedScoreCache_.resize(1 << NB_CATEGORIES);
+}
+
+void EvaluationGraph::createCache(unsigned int categoryMask) {
+    std::vector<std::vector<std::array<double, NB_CATEGORIES>>> expectedScoreCache;
+    const GameGraph* gg = GameGraph::the();
+    std::vector<int> categories;
+    for(int category = 0; category < NB_CATEGORIES; ++category) {
+        if(categoryMask & (1 << category)) categories.push_back(category);
+    }
+    Hand::forAllHands([&](Hand hand) {
+        std::vector<std::array<double, NB_CATEGORIES>> es;
+        es.reserve(gg->possibleKept(hand).size());
+        for(Kept kept : gg->possibleKept(hand)) {
+            std::array<double, NB_CATEGORIES> ss;
+            size_t count = 0;
+            std::fill(ss.begin(), ss.end(), 0.0);
+            for(const auto& d : gg->futures(hand, kept)) {
+                const auto& eval = ScoreCard::eval(d.first);
+                for(int category : categories) {
+                    ss[category] += d.second * eval[category];
+                }
+                count += d.second;
+            }
+            std::for_each(ss.begin(), ss.end(), [&](auto& v) { v /= count; });
+            es.push_back(ss);
+        }
+        expectedScoreCache.push_back(std::move(es));
+    });
+    std::swap(expectedScoreCache_[categoryMask], expectedScoreCache);
 }

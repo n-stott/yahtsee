@@ -59,6 +59,8 @@ public:
     int size() const;
     unsigned int mask() const;
 
+    std::string toString() const;
+
 private:
     unsigned int mask_;
 };
@@ -89,6 +91,7 @@ public:
     bool hasBonus() const;
 
     static int eval(Category category, Hand hand);
+    static const std::array<int, NB_CATEGORIES>& eval(Hand hand);
 
     bool write(Category category, int score);
 
@@ -108,7 +111,7 @@ private:
 
 class GameGraph {
 public:
-    static std::unique_ptr<GameGraph> tryCreate();
+    static const GameGraph* the();
 
     const std::vector<Kept>& possibleKept(Hand hand) const;
 
@@ -117,9 +120,26 @@ public:
 private:
     GameGraph();
 
+    static std::unique_ptr<GameGraph> create();
+
     std::vector<std::vector<Kept>> possibleKept_;
 
     std::vector<std::vector<std::vector<std::pair<Hand, int>>>> edges_;
+};
+
+class EvaluationGraph {
+public:
+
+    const std::array<int, NB_CATEGORIES>& score(Hand hand) const;
+    const std::array<double, NB_CATEGORIES>& expectedScore(unsigned int categoryMask, Hand hand, Kept kept) const;
+
+private:
+
+    static void createCache();
+    static void createCache(unsigned int categoryMask);
+
+    static std::vector<std::vector<std::vector<std::array<double, NB_CATEGORIES>>>> expectedScoreCache_;
+
 };
 
 #endif
